@@ -28,17 +28,14 @@ ArgParser buildParser() {
 }
 
 void printUsage(ArgParser argParser) {
-  print('Usage: dart todo.dart <flags> [arguments]');
+  print('Usage: todo [command] [arguments] --flag');
   print(argParser.usage);
 }
 
 void main(List<String> args) async {
-  var db = Database();
-  db.create().then(
-        (value) => {
-          CommandRunner('todo', 'A command-line todo app.')
-            ..addCommand(CreateCommand(db: db))
-            ..run(args)
-        },
-      );
+  var db = Database().create();
+
+  CommandRunner('todo', 'A command-line todo app.')
+    ..addCommand(CreateCommand(db: db))
+    ..run(args);
 }

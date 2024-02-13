@@ -4,14 +4,18 @@ import 'models/task.dart';
 import 'utils.dart' show binarySearch;
 
 class Database {
-  static const path = '/home/parfaitd/Work/Dart/todo/bin/src/db.csv';
+  static final path = [
+    Platform.environment['HOME'] ?? '.',
+    '.todo-db.csv',
+  ].join('/');
+
   Database();
   File get stream {
     return File(path);
   }
 
-  Future<List<Task>> get all async {
-    var lines = await stream.readAsLines();
+  List<Task> get all {
+    var lines = stream.readAsLinesSync();
 
     return lines.map(
       (line) {
@@ -27,20 +31,22 @@ class Database {
     ).toList();
   }
 
-  Future<File> create() async {
-    return stream.create();
-  }
-
-  void insert(Task task) async {
-    var rows = await all;
-    if (rows.isNotEmpty && task.id == 0) {
-      task.id = rows.last.id + 1;
+  Database create() {
+    if (!stream.existsSync()) {
+      stream.createSync();
     }
-    stream.writeAsString(task.toCsv(), mode: FileMode.append);
-    stream.writeAsString(Platform.lineTerminator, mode: FileMode.append);
+    return this;
   }
 
-  Future<Task?> get(int id) {
+  void insert(Task task) {
+    if (all.isNotEmpty && task.id == 0) {
+      task.id = all.last.id + 1;
+    }
+    stream.writeAsStringSync(task.toCsv(), mode: FileMode.append);
+    stream.writeAsStringSync(Platform.lineTerminator, mode: FileMode.append);
+  }
+
+  Task? get(int id) {
     var lines = stream.readAsLinesSync();
     var ids = lines.map(
       (line) => line.split(',')[0],
@@ -50,16 +56,14 @@ class Database {
     if (idx != null) {
       var line = lines[idx];
       var parts = line.split(',');
-      return Future(
-        () => Task(
-          id: int.parse(parts[0]),
-          title: parts[1],
-          isDone: parts[2] == '1',
-          description: parts[3],
-          dueDate: parts[4].isNotEmpty ? DateTime.parse(parts[4]) : null,
-        ),
+      return Task(
+        id: int.parse(parts[0]),
+        title: parts[1],
+        isDone: parts[2] == '1',
+        description: parts[3],
+        dueDate: parts[4].isNotEmpty ? DateTime.parse(parts[4]) : null,
       );
     }
-    return Future(() => null);
+    return null;
   }
 }

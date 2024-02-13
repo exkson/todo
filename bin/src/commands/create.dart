@@ -31,6 +31,12 @@ class CreateCommand extends Command {
         abbr: 'D',
         help: 'The due date of the task.',
         valueHelp: 'due-date',
+      )
+      ..addFlag(
+        'done',
+        help: 'The task is done',
+        negatable: false,
+        defaultsTo: false,
       );
   }
 
@@ -38,8 +44,13 @@ class CreateCommand extends Command {
   void run() {
     String title = argResults!['title'];
     String? description = argResults!['description'];
+    bool isDone = argResults!['done'];
 
-    var task = Task(title: title, description: description ?? '');
+    var task = Task(
+      title: title,
+      description: description ?? '',
+      isDone: isDone,
+    );
     db.insert(task);
   }
 }

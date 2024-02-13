@@ -1,3 +1,3 @@
-## 1.0.0
-
-- Initial version.
+## Unreleased
+- Add `create` command to create new tasks
+- Project start
