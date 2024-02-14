@@ -1,4 +1,5 @@
-import 'package:args/args.dart';
+import 'dart:io';
+
 import 'package:args/command_runner.dart';
 
 import 'src/db.dart';
@@ -6,36 +7,13 @@ import 'src/commands/create.dart';
 
 const String version = '0.0.1';
 
-ArgParser buildParser() {
-  return ArgParser()
-    ..addFlag(
-      'help',
-      abbr: 'h',
-      negatable: false,
-      help: 'Print this usage information.',
-    )
-    ..addFlag(
-      'verbose',
-      abbr: 'v',
-      negatable: false,
-      help: 'Show additional command output.',
-    )
-    ..addFlag(
-      'version',
-      negatable: false,
-      help: 'Print the tool version.',
-    );
-}
-
-void printUsage(ArgParser argParser) {
-  print('Usage: todo [command] [arguments] --flag');
-  print(argParser.usage);
-}
-
-void main(List<String> args) async {
+void main(List<String> args) {
   var db = Database().create();
+  var runner = CommandRunner('todo', 'A command-line todo app.')
+    ..addCommand(CreateCommand(db: db));
 
-  CommandRunner('todo', 'A command-line todo app.')
-    ..addCommand(CreateCommand(db: db))
-    ..run(args);
+  runner.run(args).catchError((e) {
+    print(runner.usage);
+    exit(62);
+  });
 }
